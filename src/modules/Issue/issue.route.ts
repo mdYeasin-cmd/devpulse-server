@@ -10,4 +10,6 @@ rounter.post(
   issueController.createIssue,
 );
 
+rounter.get("/", issueController.getAllIssues);
+
 export const issueRoute = rounter;
