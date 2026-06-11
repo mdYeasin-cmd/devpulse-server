@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import config from "../config";
 
 interface JwtPayload {
   id: number;
@@ -7,9 +8,24 @@ interface JwtPayload {
 }
 
 const generateJwtAccessToken = (payload: JwtPayload) => {
-  return jwt.sign(payload, "your_secret_key", { expiresIn: "1h" });
+  return jwt.sign(payload, config.jwt_secret_key as string, {
+    expiresIn: "1h",
+  });
+};
+
+const verifyJwtToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(
+      token,
+      config.jwt_secret_key as string,
+    ) as JwtPayload;
+    return decoded;
+  } catch (error) {
+    throw new Error("Invalid token!");
+  }
 };
 
 export const jwtHelper = {
   generateJwtAccessToken,
+  verifyJwtToken,
 };
