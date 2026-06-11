@@ -1,11 +1,13 @@
 import { Router } from "express";
 import auth from "../../middlewares/auth";
+import { issueController } from "./issue.controller";
 
 const rounter = Router();
 
-rounter.post("/", auth(), (req, res) => {
-  console.log(req.user, "role from auth middleware");
-  res.send("Issue created successfully");
-});
+rounter.post(
+  "/",
+  auth("maintainer", "contributor"),
+  issueController.createIssue,
+);
 
 export const issueRoute = rounter;
