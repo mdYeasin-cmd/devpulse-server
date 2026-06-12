@@ -103,9 +103,18 @@ const getSingleIssueFromDB = async (id: string) => {
     [reporterId],
   );
 
-  issue.reporter = reporterInfo.rows[0];
+  const formatedIssue = {
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,
+    reporter: reporterInfo.rows[0],
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+  };
 
-  return issue;
+  return formatedIssue;
 };
 
 const updateAIssueInDB = async (
