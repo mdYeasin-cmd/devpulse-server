@@ -58,6 +58,7 @@ const getAllIssues = async (req: Request, res: Response) => {
 const getSingleIssue = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    console.log(id, "id of single issue");
     const result = await issueService.getSingleIssueFromDB(id as string);
 
     if (!result) {

@@ -94,6 +94,10 @@ const getAllIssuesFromDB = async (query: IIssueQuery) => {
 const getSingleIssueFromDB = async (id: string) => {
   const result = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
 
+  if (!result.rows.length) {
+    throw new Error("Issue not found");
+  }
+
   const issue = result.rows[0];
 
   const reporterId = issue?.reporter_id;
