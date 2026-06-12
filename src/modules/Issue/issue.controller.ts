@@ -3,6 +3,7 @@ import sendResponse from "../../utils/sendResponse";
 import { issueService } from "./issue.service";
 import type { IIssue } from "./issue.interface";
 import type { IUser } from "../Auth/auth.interface";
+import { StatusCodes } from "http-status-codes";
 
 const createIssue = async (req: Request, res: Response) => {
   try {
@@ -15,7 +16,7 @@ const createIssue = async (req: Request, res: Response) => {
     const result = await issueService.createIssueIntoDB(issueData);
 
     sendResponse(res, {
-      statusCode: 201,
+      statusCode: StatusCodes.CREATED,
       success: true,
       message: "Issue created successfully",
       data: result,
@@ -23,7 +24,7 @@ const createIssue = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log(error);
     sendResponse(res, {
-      statusCode: 500,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       success: false,
       message: error.message,
       error: error,
@@ -36,7 +37,7 @@ const getAllIssues = async (req: Request, res: Response) => {
     const result = await issueService.getAllIssuesFromDB();
 
     sendResponse(res, {
-      statusCode: 200,
+      statusCode: StatusCodes.OK,
       success: true,
       message: "Issues retrieved successfully",
       data: result,
@@ -44,7 +45,7 @@ const getAllIssues = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log(error);
     sendResponse(res, {
-      statusCode: 500,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       success: false,
       message: error.message,
       error: error,
@@ -59,14 +60,14 @@ const getSingleIssue = async (req: Request, res: Response) => {
 
     if (!result) {
       return sendResponse(res, {
-        statusCode: 404,
+        statusCode: StatusCodes.NOT_FOUND,
         success: false,
         message: "Issue not found",
       });
     }
 
     sendResponse(res, {
-      statusCode: 200,
+      statusCode: StatusCodes.OK,
       success: true,
       message: "Issue retrieved successfully",
       data: result,
@@ -74,7 +75,7 @@ const getSingleIssue = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log(error);
     sendResponse(res, {
-      statusCode: 500,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       success: false,
       message: error.message,
       error: error,
@@ -95,7 +96,7 @@ const updateAIssue = async (req: Request, res: Response) => {
     );
 
     sendResponse(res, {
-      statusCode: 200,
+      statusCode: StatusCodes.OK,
       success: true,
       message: "Issue updated successfully",
       data: result,
@@ -103,7 +104,29 @@ const updateAIssue = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log(error);
     sendResponse(res, {
-      statusCode: 500,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: error.message,
+      error: error,
+    });
+  }
+};
+
+const deleteAIssue = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    await issueService.deleteAIssueFromDB(id as string);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Issue deleted successfully",
+    });
+  } catch (error: any) {
+    console.log(error);
+    sendResponse(res, {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       success: false,
       message: error.message,
       error: error,
@@ -116,4 +139,5 @@ export const issueController = {
   getAllIssues,
   getSingleIssue,
   updateAIssue,
+  deleteAIssue,
 };

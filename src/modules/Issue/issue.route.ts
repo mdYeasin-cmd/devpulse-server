@@ -20,4 +20,6 @@ rounter.patch(
   issueController.updateAIssue,
 );
 
+rounter.delete("/:id", auth("maintainer"), issueController.deleteAIssue);
+
 export const issueRoute = rounter;
