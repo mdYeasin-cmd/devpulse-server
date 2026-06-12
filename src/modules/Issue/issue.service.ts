@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import { USER_ROLE } from "../../types";
 import type { IUser } from "../Auth/auth.interface";
 import { ISSUE_STATUS, ISSUE_TYPE } from "./issue.constant";
 import type { IIssue, IIssueQuery } from "./issue.interface";
@@ -112,8 +113,6 @@ const updateAIssueInDB = async (
   user: IUser,
   payload: Partial<IIssue>,
 ) => {
-  console.log(user, "Requested User!");
-
   const isIssueExist = await pool.query(`SELECT * FROM issues WHERE id = $1`, [
     id,
   ]);
@@ -124,10 +123,32 @@ const updateAIssueInDB = async (
 
   const issue = isIssueExist.rows[0];
 
-  console.log(issue, "Issue found!");
+  const isContributor = user.role === USER_ROLE.contributor;
 
-  if (user.role === "contributor" && issue.reporter_id !== user.id) {
-    throw new Error("You are not authorized to update this issue");
+  if (isContributor) {
+    if (issue.reporter_id !== user.id) {
+      throw new Error("You are not authorized to update this issue");
+    }
+
+    if (payload.status !== undefined) {
+      throw new Error("Only maintainers can update issue status");
+    }
+
+    if (issue.status !== ISSUE_STATUS.open) {
+      throw new Error("Only issues with 'open' status can be updated");
+    }
+  }
+
+  if (payload.type && !Object.keys(ISSUE_TYPE).includes(payload.type)) {
+    throw new Error(
+      "Invalid issue type. It should be either 'bug' or 'feature_request'.",
+    );
+  }
+
+  if (payload.status && !Object.keys(ISSUE_STATUS).includes(payload.status)) {
+    throw new Error(
+      "Invalid issue status. It should be either 'open', 'in_progress' or 'resolved'.",
+    );
   }
 
   const result = await pool.query(
@@ -136,14 +157,21 @@ const updateAIssueInDB = async (
     SET 
     title=COALESCE($1,title),
     description=COALESCE($2,description),
-    type=COALESCE($3,type)
+    type=COALESCE($3,type),
+    status=COALESCE($4,status)
 
-    WHERE id=$4 RETURNING *
+    WHERE id=$5 RETURNING *
     `,
-    [payload.title, payload.description, payload.type, issue.id],
+    [
+      payload.title,
+      payload.description,
+      payload.type,
+      payload.status,
+      issue.id,
+    ],
   );
 
-  console.log(result);
+  return result.rows[0];
 };
 
 const deleteAIssueFromDB = async (id: string) => {
