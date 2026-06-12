@@ -12,4 +12,6 @@ rounter.post(
 
 rounter.get("/", issueController.getAllIssues);
 
+rounter.get("/:id", issueController.getSingleIssue);
+
 export const issueRoute = rounter;
