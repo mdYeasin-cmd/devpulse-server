@@ -217,4 +217,4 @@ The application uses PostgreSQL and creates the following tables on startup if t
 
 - JWT access tokens expire after 7 days.
 - Protected routes expect the raw token value in the `Authorization` header.
-- CORS is currently configured for `http://localhost:5000`.
+- CORS is currently configured for `http://localhost:5000` and `https://devpulse-server-pi.vercel.app`.

@@ -10,7 +10,7 @@ import cors from "cors";
 
 const app: Application = express();
 const corsOption = {
-  origin: "http://localhost:5000",
+  origin: ["http://localhost:5000", "https://devpulse-server-pi.vercel.app"],
 };
 
 app.use(cors(corsOption));
