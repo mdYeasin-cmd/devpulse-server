@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import type { IUser } from "../Auth/auth.interface";
 import { ISSUE_STATUS, ISSUE_TYPE } from "./issue.constant";
 import type { IIssue } from "./issue.interface";
 
@@ -53,8 +54,48 @@ const getSingleIssueFromDB = async (id: string) => {
   return issue;
 };
 
+const updateAIssueInDB = async (
+  id: string,
+  user: IUser,
+  payload: Partial<IIssue>,
+) => {
+  console.log(user, "Requested User!");
+
+  const isIssueExist = await pool.query(`SELECT * FROM issues WHERE id = $1`, [
+    id,
+  ]);
+
+  if (!isIssueExist.rows.length) {
+    throw new Error("Issue not found");
+  }
+
+  const issue = isIssueExist.rows[0];
+
+  console.log(issue, "Issue found!");
+
+  if (user.role === "contributor" && issue.reporter_id !== user.id) {
+    throw new Error("You are not authorized to update this issue");
+  }
+
+  const result = await pool.query(
+    `
+    UPDATE issues 
+    SET 
+    title=COALESCE($1,title),
+    description=COALESCE($2,description),
+    type=COALESCE($3,type)
+
+    WHERE id=$4 RETURNING *
+    `,
+    [payload.title, payload.description, payload.type, issue.id],
+  );
+
+  console.log(result);
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  updateAIssueInDB,
 };

@@ -14,4 +14,10 @@ rounter.get("/", issueController.getAllIssues);
 
 rounter.get("/:id", issueController.getSingleIssue);
 
+rounter.patch(
+  "/:id",
+  auth("maintainer", "contributor"),
+  issueController.updateAIssue,
+);
+
 export const issueRoute = rounter;
