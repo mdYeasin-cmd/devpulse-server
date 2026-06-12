@@ -1,7 +1,7 @@
 import { pool } from "../../db";
 import type { IUser } from "../Auth/auth.interface";
 import { ISSUE_STATUS, ISSUE_TYPE } from "./issue.constant";
-import type { IIssue } from "./issue.interface";
+import type { IIssue, IIssueQuery } from "./issue.interface";
 
 const createIssueIntoDB = async (payload: IIssue) => {
   if (payload.description.length < 20) {
@@ -32,9 +32,62 @@ const createIssueIntoDB = async (payload: IIssue) => {
   return result.rows[0];
 };
 
-const getAllIssuesFromDB = async () => {
-  const result = await pool.query(`SELECT * FROM issues`);
-  return result.rows;
+const getAllIssuesFromDB = async (query: IIssueQuery) => {
+  let baseQuery = `SELECT * FROM issues`;
+
+  const conditions = [];
+  const values = [];
+
+  if (query?.type) {
+    conditions.push(`type = $${values.length + 1}`);
+    values.push(query.type);
+  }
+
+  if (query?.status) {
+    conditions.push(`status = $${values.length + 1}`);
+    values.push(query.status);
+  }
+
+  if (conditions.length) {
+    baseQuery += ` WHERE ${conditions.join(" AND ")}`;
+  }
+
+  const sort = query?.sort ?? "newest";
+  const orderBy = sort === "oldest" ? "ASC" : "DESC";
+
+  baseQuery += ` ORDER BY created_at ${orderBy}`;
+
+  console.log(baseQuery, "base query for issues");
+
+  const result = await pool.query(baseQuery, values);
+
+  const issues = result.rows;
+
+  const issuesWithReporterInfo = issues.map(async (issue) => {
+    const reporterId = issue.reporter_id;
+
+    const reporterInfo = await pool.query(
+      `SELECT id, name, role FROM users WHERE id = $1`,
+      [reporterId],
+    );
+
+    issue.reporter = reporterInfo.rows[0];
+
+    return {
+      id: issue.id,
+      title: issue.title,
+      description: issue.description,
+      type: issue.type,
+      status: issue.status,
+      reporter: issue.reporter,
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    };
+  });
+
+  const results = await Promise.all(issuesWithReporterInfo);
+
+  return results;
 };
 
 const getSingleIssueFromDB = async (id: string) => {

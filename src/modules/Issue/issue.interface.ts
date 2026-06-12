@@ -6,3 +6,9 @@ export interface IIssue {
   status: "open" | "in_progress" | "resolved";
   reporterId: string;
 }
+
+export interface IIssueQuery {
+  sort?: "newest" | "oldest";
+  type?: "bug" | "feature_request";
+  status?: "open" | "in_progress" | "resolved";
+}

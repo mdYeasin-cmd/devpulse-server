@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import sendResponse from "../../utils/sendResponse";
 import { issueService } from "./issue.service";
-import type { IIssue } from "./issue.interface";
+import type { IIssue, IIssueQuery } from "./issue.interface";
 import type { IUser } from "../Auth/auth.interface";
 import { StatusCodes } from "http-status-codes";
 
@@ -34,7 +34,9 @@ const createIssue = async (req: Request, res: Response) => {
 
 const getAllIssues = async (req: Request, res: Response) => {
   try {
-    const result = await issueService.getAllIssuesFromDB();
+    const query: IIssueQuery = req.query;
+
+    const result = await issueService.getAllIssuesFromDB(query);
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,
